@@ -1,0 +1,17 @@
+.hero {
+  background-color: #fff; /* Or a light background color to match your theme */
+  padding-bottom: 2em;
+}
+
+.heroTag {
+  /* Customize styling as you wish */
+}
+
+.heroImage {
+  /* Optionally style to add rounded borders etc. */
+  height: 20em;
+  width: 100%;
+  background-image: url("../../public/images/eggs.jpg");
+  background-size: cover;
+  background-position: center;
+}

@@ -1,0 +1,6 @@
+.footer {
+  background-color: #f2f2f2; /* A light grey background color */
+  padding: 2rem 0;
+  font-size: 0.875rem; /* Reduce font-size for the footer */
+  color: #555; /* A slightly muted text color */
+}
