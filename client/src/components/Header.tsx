@@ -1,13 +1,14 @@
 import React from "react";
 import styles from "../styles/Header.module.css";
+import Link from "next/link";
 
 const Header = () => {
   return (
     <header className={styles.header}>
       <div className="container mx-auto flex items-center justify-between py-4">
-        <a href="/">
+        <Link href="/">
           <h1 className="text-3xl font-semibold text-green-700">Egg</h1>
-        </a>
+        </Link>
         <nav>
           <a href="#" className="mr-6">
             Login
