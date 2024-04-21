@@ -15,20 +15,75 @@ client = Square::Client.new(
   environment: 'sandbox'
 )
 
-result = client.catalog.list_catalog(
+# Fetch categories from Square
+categories = client.catalog.list_catalog(
   types: 'CATEGORY'
 )
 
-if result.success?
-  categories = result.data.objects
+if categories.success?
+  categories = categories.data.objects
   puts "Fetched #{categories.count} categories"
 else
-  puts "Error fetching categories: #{result.errors}"
+  puts "Error fetching categories: #{categories.errors}"
 end
 
 categories.each do |square_category|
-  Category.create(
-    square_id: square_category[:id],
-    name: square_category[:category_data][:name] 
-  )
+  if Category.exists?(square_id: square_category[:id])
+    Category.find_by(square_id: square_category[:id]).update(
+      name: square_category[:category_data][:name]
+    )
+  else
+    Category.create!(
+      square_id: square_category[:id],
+      name: square_category[:category_data][:name] 
+    )
+  end
 end
+
+puts "Created/Updated #{Category.count} categories"
+
+# Fetch products from Square
+products = client.catalog.list_catalog(
+  types: 'ITEM'
+)
+
+if products.success?
+  products = products.data.objects
+  puts "Fetched #{products.count} products"
+  # puts products
+else
+  puts "Error fetching products: #{products.errors}"
+end
+
+product_images = client.catalog.batch_retrieve_catalog_objects(
+  body: {
+    object_ids: products.map { |product| product[:id] },
+    include_related_objects: true
+  }
+)
+
+products.each do |square_item|
+  product_image = product_images.data.related_objects.find { |object| object[:id] == square_item[:item_data][:image_ids][0] }
+
+  if Product.exists?(square_id: square_item[:id])
+    Product.find_by(square_id: square_item[:id]).update(
+      name: square_item[:item_data][:name],
+      category_id: square_item[:item_data][:categories][0][:id],
+      description: square_item[:item_data][:description],
+      price: square_item[:item_data][:variations][0][:item_variation_data][:price_money][:amount],
+      image_url: product_image[:image_data][:url] || nil
+    )
+  else
+      Product.create!(
+        square_id: square_item[:id],
+        name: square_item[:item_data][:name],
+        category_id: square_item[:item_data][:categories][0][:id],
+        description: square_item[:item_data][:description],
+        price: square_item[:item_data][:variations][0][:item_variation_data][:price_money][:amount],
+        image_url: product_image[:image_data][:url] || nil
+      )
+    puts "Created product: #{square_item[:item_data][:name]}"
+  end
+end
+
+puts "Created/Updated #{Product.count} products"
